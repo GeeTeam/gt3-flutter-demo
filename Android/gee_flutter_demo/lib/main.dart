@@ -71,7 +71,7 @@ class MyApp extends State<LifecycleAppPage>
   @override
   void dispose() {
     // TODO: implement dispose
-    WidgetsBinding.instance.removeObserver(this);
+    WidgetsBinding.instance!.removeObserver(this);
     onDestroy();
     super.dispose();
   }

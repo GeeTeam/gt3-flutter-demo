@@ -1,11 +1,11 @@
 package com.geetest.gee_flutter_demo;
 
-import android.annotation.TargetApi;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.geetest.sdk.GT3ConfigBean;
@@ -15,18 +15,19 @@ import com.geetest.sdk.GT3Listener;
 
 import org.json.JSONObject;
 
-import io.flutter.Log;
-import io.flutter.app.FlutterActivity;
+import androidx.annotation.NonNull;
+import io.flutter.embedding.android.FlutterActivity;
+import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugins.GeneratedPluginRegistrant;
 
 public class MainActivity extends FlutterActivity {
-    private static final String TAG = MainActivity.class.getSimpleName();
+
+    private static final String TAG = "MainActivity";
 
     // api1，需替换成自己的服务器URL
-    private static String captchaURL = "https://www.geetest.com/demo/gt/register-slide-voice";
+    private static final String captchaURL = "https://www.geetest.com/demo/gt/register-slide-voice";
     // api2，需替换成自己的服务器URL
-    private static String validateURL = "https://www.geetest.com/demo/gt/validate-slide-voice";
+    private static final String validateURL = "https://www.geetest.com/demo/gt/validate-slide-voice";
 
     private GT3GeetestUtils gt3GeetestUtils;
     private GT3ConfigBean gt3ConfigBean;
@@ -36,8 +37,12 @@ public class MainActivity extends FlutterActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         gt3GeetestUtils = new GT3GeetestUtils(this);
-        GeneratedPluginRegistrant.registerWith(this);
-        new MethodChannel(getFlutterView(), CHANNEL).setMethodCallHandler(
+    }
+
+    @Override
+    public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
+        super.configureFlutterEngine(flutterEngine);
+        new MethodChannel(flutterEngine.getDartExecutor(), CHANNEL).setMethodCallHandler(
                 (call, result) -> {
                     if (call.method.equals("customVerity")) {
                         customVerity(result);
@@ -66,21 +71,17 @@ public class MainActivity extends FlutterActivity {
         gt3ConfigBean.setListener(new GT3Listener() {
 
             /**
-             * api1结果回调
-             * @param result
-             */
-            @Override
-            public void onApi1Result(String result) {
-                Log.e(TAG, "GT3BaseListener-->onApi1Result-->" + result);
-            }
-
-            /**
              * 验证码加载完成
              * @param duration 加载时间和版本等信息，为json格式
              */
             @Override
             public void onDialogReady(String duration) {
                 Log.e(TAG, "GT3BaseListener-->onDialogReady-->" + duration);
+            }
+
+            @Override
+            public void onReceiveCaptchaCode(int i) {
+                Log.e(TAG, "GT3BaseListener-->onClosed-->" + i);
             }
 
             /**
@@ -94,15 +95,6 @@ public class MainActivity extends FlutterActivity {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CUPCAKE) {
                     new RequestAPI2().execute(result);
                 }
-            }
-
-            /**
-             * api2回调
-             * @param result
-             */
-            @Override
-            public void onApi2Result(String result) {
-                Log.e(TAG, "GT3BaseListener-->onApi2Result-->" + result);
             }
 
             /**
